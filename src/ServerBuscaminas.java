@@ -100,16 +100,10 @@ public class ServerBuscaminas {
                         ganar = 1;
                     }
                 }
-
-
-
-
                 cl.close();
-
-            }//for
-
+            }
         }catch(Exception e){
             e.printStackTrace();
         }
-    }//main
+    }
 }

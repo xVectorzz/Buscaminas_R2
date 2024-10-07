@@ -67,8 +67,6 @@ public class ClientBuscaminas {
                 }
 
             }
-
-
             cl.close();
         }catch(Exception e){
             e.printStackTrace();
