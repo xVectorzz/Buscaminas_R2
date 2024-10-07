@@ -6,85 +6,104 @@ import java.util.Random;
 public class ServerBuscaminas {
     public static void main(String[] args){
         try{
+            int filran, colran, minas, fila, columna, opcion, dificultad, suma, conteominas = 0, ganar = 0;
             ServerSocket s = new ServerSocket(1234);
             System.out.println("Servicio iniciado en el puerto "+s.getLocalPort()+"  Esperando por clientes..");
             Random random = new Random();
-            int filran;
-            int colran;
-            int ganado = 0;
+
             for(;;){  //while(1)
                 Socket cl = s.accept();
                 System.out.println("Cliente conectado desde "+cl.getInetAddress()+":"+cl.getPort());
-                DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
-                dos.writeUTF("Selecciona la dificultad del juego" +
-                                                "\n(1:Fácil 9x9 casillas y 10 minas)" +
-                                                "\n(2:Intermedio 16x16 casillas y 40 minas)" +
-                                        "\n(3:Dificil 16x30 y 99 minas)");
-                DataInputStream dis = new DataInputStream(cl.getInputStream());
-                int dificultad = dis.readInt();
-                System.out.println("Dificultad seleccionada por el cliente: "+ dificultad);
+
+                BufferedReader input = new BufferedReader(new InputStreamReader(cl.getInputStream()));
+                PrintWriter output = new PrintWriter(cl.getOutputStream(), true);
+
+                output.println("Selecciona la dificultad: 1 (Fácil 9x9 10 minas), 2 (Medio 16x16 40 minas), 3 (Difícil 16x30 99 minas):");
+                dificultad = Integer.parseInt(input.readLine()); // Leer la dificultad desde el cliente
+                System.out.println("Dificultad seleccionada: " + dificultad);
+
+                int[][] matrizCompleta;
+                int[][] matrizCliente;
+
                 switch (dificultad){
                     case 1:
-                        int [][] matrizCompletaf = new int[9][9];
-                        int [][] matrizClientef = new int[9][9];
-
-                        for(int m=0; m<9;m++){
-                            filran= random.nextInt(9);
-                            colran= random.nextInt(9);
-                            matrizCompletaf[filran][colran]= -1;
-                            matrizClientef[filran][colran]= -2;
-                        }
-                        for (int i= 0; i<9;i++){
-                            for (int j= 0; j<9;j++){
-                                if(matrizCompletaf[i][j]!=-1){
-                                    matrizCompletaf[i][j]= Functions.contarMinasAlrededor(matrizCompletaf,i,j);
-                                    while(!(ganado==1)){
-
-                                    }
-                                }
-                            }
-                        }
-
+                        matrizCompleta = new int[9][9];
+                        matrizCliente = new int[9][9];
+                        minas = 10;
                         break;
                     case 2:
-                        int [][] matrizCompletam = new int[16][16];
-                        int [][] matrizClientem = new int[16][16];
-                        for(int m=0; m<16;m++){
-                            filran= random.nextInt(16);
-                            colran= random.nextInt(16);
-                            matrizCompletam[filran][colran]= -1;
-                            matrizClientem[filran][colran]= -2;
-                        }
-                        for (int i= 0; i<16;i++){
-                            for (int j= 0; j<16;j++){
-                                if(matrizCompletam[i][j]!=-1){
-                                    matrizCompletam[i][j]= Functions.contarMinasAlrededor(matrizCompletam,i,j);
-                                }
-                            }
-                        }
+                        matrizCompleta = new int[16][16];
+                        matrizCliente = new int[16][16];
+                        minas = 40;
                         break;
                     case 3:
-                        int [][] matrizCompletad = new int[16][16];
-                        int [][] matrizCliented = new int[16][16];
-                        for(int m=0; m<16;m++){
-                            filran= random.nextInt(16);
-                            colran= random.nextInt(16);
-                            matrizCompletad[filran][colran]= -1;
-                            matrizCliented[filran][colran]= -2;
-                        }
-                        for (int i= 0; i<16;i++){
-                            for (int j= 0; j<16;j++){
-                                if(matrizCompletad[i][j]!=-1){
-                                    matrizCompletad[i][j]= Functions.contarMinasAlrededor(matrizCompletad,i,j);
-                                }
-                            }
-                        }
+                        matrizCompleta = new int[16][30];
+                        matrizCliente = new int[16][30];
+                        minas = 99;
                         break;
                     default:
-                        dos.writeUTF("Invalido, intente de nuevo...");
+                        matrizCompleta = new int[9][9];
+                        matrizCliente = new int[9][9];
+                        minas = 10;
+                        break;
                 }
-                dis.close();
-                dos.close();
+
+                for (int m = 0; m < minas; m++) {
+                    do {
+                        filran = random.nextInt(matrizCompleta.length);
+                        colran = random.nextInt(matrizCompleta[0].length);
+                    } while (matrizCompleta[filran][colran] == -1); // -1 indica que hay una mina
+
+                    matrizCompleta[filran][colran] = -1;
+                    matrizCliente[filran][colran] = -2;
+                }
+                for (int i = 0; i < matrizCompleta.length; i++) {
+                    for (int j = 0; j < matrizCompleta[i].length; j++) {
+                        if (matrizCompleta[i][j] != -1) {
+                            matrizCompleta[i][j] = Functions.contarMinasAlrededor(matrizCompleta, i, j);
+                            matrizCliente[i][j] = -3;
+                        }
+                    }
+                }
+
+                Functions.imprimirTablero(matrizCompleta,0);
+
+                while (ganar == 0) {
+                    // Enviar al cliente el tablero actual
+                    output.println(Functions.tableroToString(matrizCliente,0));
+
+                    // Leer las coordenadas y la opción del cliente
+                    output.println("Introduce la fila (coordenada y):");
+                    fila = Integer.parseInt(input.readLine());
+
+                    output.println("Introduce la columna (coordenada x):");
+                    columna = Integer.parseInt(input.readLine());
+
+                    output.println("Introduce si deseas revelar (0) o marcar una bomba (1):");
+                    opcion = Integer.parseInt(input.readLine());
+
+                    // Procesar la jugada
+                    suma = Functions.revelarArea(fila, columna, matrizCompleta, matrizCliente, opcion);
+
+                    if (suma < 0){
+                        output.println("Bomba");
+                        output.println(Functions.tableroToString(matrizCliente,1));
+                        break;
+                    }
+                    conteominas += suma;
+
+
+                    // Verificar si ganó
+                    if (conteominas == minas) {
+                        output.println("¡Ganaste!");
+                        System.out.println("Cliente conectado desde "+cl.getInetAddress()+":"+cl.getPort()+"Ha ganado");
+                        ganar = 1;
+                    }
+                }
+
+
+
+
                 cl.close();
 
             }//for
