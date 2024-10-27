@@ -25,46 +25,67 @@ public class ClientBuscaminas {
             int dificultad = scanner.nextInt();
             output.println(dificultad); // Enviar la dificultad seleccionada al servidor
 
+            System.out.println(input.readLine()); // "Introduce la fila (coordenada y):"
+            int fila = scanner.nextInt() -1;
+            output.println(fila);
+
+            System.out.println(input.readLine()); // "Introduce la columna (coordenada x):"
+            int columna = scanner.nextInt() -1;
+            output.println(columna);
+
+            System.out.println(input.readLine()); // "Introduce si deseas revelar (0) o marcar una bomba (1):"
+            int opcion = scanner.nextInt();
+            output.println(opcion); // Enviar la opción al servidor
+
+            StringBuilder tableroCompleto = new StringBuilder();
+            String linea;
+
+            while ((linea = input.readLine()) != null && !linea.isEmpty()) {
+                tableroCompleto.append(linea).append("\n");
+            }
+            System.out.println("Juego iniciado");
+
             while (true) {
+
                 // Leer el tablero actual enviado por el servidor
                 StringBuilder tablero = new StringBuilder();
-                String linea;
+
 
                 // Mientras no haya una línea vacía, lee las líneas del tablero
                 while ((linea = input.readLine()) != null && !linea.isEmpty()) {
                     tablero.append(linea).append("\n");
                 }
 
-                // Imprimir la cabecera antes de imprimir el tablero
-
                 System.out.print(tablero.toString());
 
 
                 // Pedir al usuario que ingrese las coordenadas y la opción
                 System.out.println(input.readLine()); // "Introduce la fila (coordenada y):"
-                int fila = scanner.nextInt() -1;
+                fila = scanner.nextInt() -1;
                 output.println(fila); // Enviar la fila al servidor
 
                 System.out.println(input.readLine()); // "Introduce la columna (coordenada x):"
-                int columna = scanner.nextInt() -1;
+                columna = scanner.nextInt() -1;
                 output.println(columna); // Enviar la columna al servidor
 
                 System.out.println(input.readLine()); // "Introduce si deseas revelar (0) o marcar una bomba (1):"
-                int opcion = scanner.nextInt();
+                opcion = scanner.nextInt();
                 output.println(opcion); // Enviar la opción al servidor
 
 
-                System.out.println("Tablero actual:");
+
                 // Leer el resultado del servidor
                 String resultado = input.readLine();
                 System.out.println(resultado); // Imprimir el resultado
                 if (resultado.contains("¡Ganaste!")) {
+                    System.out.print(tableroCompleto.toString());
                     break; // Salir del bucle si el cliente gana
                 } else if (resultado.contains("Bomba")){
                     System.out.println("Tablero actual:");
-                    System.out.print(tablero.toString());
+                    System.out.print(tableroCompleto.toString());
                     break;
                 }
+                System.out.println("Tablero actual:");
 
             }
             cl.close();

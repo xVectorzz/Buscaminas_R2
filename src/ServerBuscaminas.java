@@ -22,6 +22,15 @@ public class ServerBuscaminas {
                 dificultad = Integer.parseInt(input.readLine()); // Leer la dificultad desde el cliente
                 System.out.println("Dificultad seleccionada: " + dificultad);
 
+                output.println("Introduce la fila (coordenada y):");
+                fila = Integer.parseInt(input.readLine());
+
+                output.println("Introduce la columna (coordenada x):");
+                columna = Integer.parseInt(input.readLine());
+
+                output.println("Introduce si deseas revelar (0) o marcar una bomba (1):");
+                opcion = Integer.parseInt(input.readLine());
+
                 int[][] matrizCompleta;
                 int[][] matrizCliente;
 
@@ -52,7 +61,7 @@ public class ServerBuscaminas {
                     do {
                         filran = random.nextInt(matrizCompleta.length);
                         colran = random.nextInt(matrizCompleta[0].length);
-                    } while (matrizCompleta[filran][colran] == -1); // -1 indica que hay una mina
+                    } while (matrizCompleta[filran][colran] == -1 && (fila!=filran) && (columna!=colran)); // -1 indica que hay una mina
 
                     matrizCompleta[filran][colran] = -1;
                     matrizCliente[filran][colran] = -2;
@@ -67,6 +76,10 @@ public class ServerBuscaminas {
                 }
 
                 Functions.imprimirTablero(matrizCompleta,0);
+
+                output.println(Functions.tableroToString(matrizCompleta,0));
+
+                suma = Functions.revelarArea(fila, columna, matrizCompleta, matrizCliente, opcion);
 
                 while (ganar == 0) {
                     // Enviar al cliente el tablero actual
